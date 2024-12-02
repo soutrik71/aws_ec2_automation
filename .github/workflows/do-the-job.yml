@@ -2,7 +2,9 @@ name: do-the-job
 on:
   push:
     branches:
-      - main
+      - master
+
+  workflow_dispatch:
 
 jobs:
   start-runner:

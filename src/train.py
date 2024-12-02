@@ -89,6 +89,10 @@ def main():
     data_module.setup(stage="test")
     trainer.test(model, datamodule=data_module)
 
+    # write a checkpoints/train_done.flag
+    with open("checkpoints/train_done.flag", "w") as f:
+        f.write("Training done.")
+
     # upload checkpoints to S3
     s3_handler = S3Handler(bucket_name="deep-bucket-s3")
     s3_handler.upload_folder(
