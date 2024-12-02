@@ -3,7 +3,9 @@ name: Deploy PyTorch Training with EC2 Runner and Docker Compose
 on:
   push:
     branches:
-      - main
+      - master
+
+  workflow_dispatch:
 
 jobs:
   start-runner:
