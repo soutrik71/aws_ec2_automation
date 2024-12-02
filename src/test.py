@@ -4,6 +4,7 @@ from src.model import LitEfficientNet
 from src.dataloader import MNISTDataModule
 from torchmetrics.classification import Accuracy
 from pathlib import Path
+from src.utils.aws_s3_services import S3Handler
 
 # Configure Loguru to save logs to the logs/ directory
 logger.add("logs/test.log", rotation="1 MB", level="INFO")
@@ -92,7 +93,13 @@ def test_model(checkpoint_path):
 
 
 if __name__ == "__main__":
-    # Example usage
+
+    # downloading from s3
+    s3_handler = S3Handler(bucket_name="deep-bucket-s3")
+    s3_handler.download_folder(
+        "checkpoints_test",
+        "checkpoints",
+    )
     checkpoint_path = "./checkpoints/best_model.ckpt"
     try:
         # Perform testing

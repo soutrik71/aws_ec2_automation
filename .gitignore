@@ -122,3 +122,7 @@ dmypy.json
 *.pth
 logs/
 data/
+checkpoints/
+checkpoints/*
+checkpoints/best_model.ckpt
+checkpoints/last.ckpt

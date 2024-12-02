@@ -1,0 +1,63 @@
+services:
+  train:
+    build:
+      context: .
+    command: |
+      python -m src.train && \
+      touch ./checkpoints/train_done.flag
+    volumes:
+      - ./data:/app/data
+      - ./checkpoints:/app/checkpoints
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+      - NUM_WORKERS=4  # Set the number of workers
+    shm_size: '4g'
+    deploy:
+      resources:
+        limits:
+          memory: 8g  # Limit to 8GB RAM
+          cpus: '4.0' # Use up to 4 CPU cores
+        reservations:
+          memory: 6g  # Reserve 6GB RAM
+          cpus: '4.0' # Reserve 4 CPU cores
+    networks:
+      - default
+    env_file:
+      - .env
+
+  eval:
+    build:
+      context: .
+    command: |
+      sh -c 'while [ ! -f /app/checkpoints/train_done.flag ]; do sleep 10; done && python -m src.test'
+    volumes:
+      - ./data:/app/data
+      - ./checkpoints:/app/checkpoints
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+      - NUM_WORKERS=2  # Set the number of workers
+    shm_size: '4g'
+    deploy:
+      resources:
+        limits:
+          memory: 4g  # Limit to 4GB RAM
+          cpus: '4.0' # Use up to 4 CPU core
+        reservations:
+          memory: 2g  # Reserve 2GB RAM
+          cpus: '2' # Reserve 2 CPU core
+    networks:
+      - default
+    env_file:
+      - .env
+
+volumes:
+  data:
+  checkpoints:
+  logs:
+
+networks:
+  default:

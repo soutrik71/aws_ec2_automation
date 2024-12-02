@@ -11,6 +11,7 @@ from src.dataloader import MNISTDataModule
 from src.model import LitEfficientNet
 from loguru import logger
 import os
+from src.utils.aws_s3_services import S3Handler
 
 # Ensure the logs directory exists
 os.makedirs("logs", exist_ok=True)
@@ -25,7 +26,7 @@ def main():
     """
     # Data Module
     logger.info("Setting up data module...")
-    data_module = MNISTDataModule(batch_size=64)
+    data_module = MNISTDataModule(batch_size=256)
 
     # Model
     logger.info("Setting up model...")
@@ -43,6 +44,7 @@ def main():
         auto_insert_metric_name=False,
         verbose=True,
         save_last=True,
+        enable_version_counter=False,
     )
     early_stopping_callback = EarlyStopping(
         monitor="val_acc",
@@ -64,7 +66,7 @@ def main():
     # Trainer Configuration for CPU
     logger.info("Setting up trainer...")
     trainer = pl.Trainer(
-        max_epochs=5,
+        max_epochs=2,
         callbacks=[
             checkpoint_callback,
             early_stopping_callback,
@@ -86,6 +88,13 @@ def main():
     logger.info("Testing the model...")
     data_module.setup(stage="test")
     trainer.test(model, datamodule=data_module)
+
+    # upload checkpoints to S3
+    s3_handler = S3Handler(bucket_name="deep-bucket-s3")
+    s3_handler.upload_folder(
+        "checkpoints",
+        "checkpoints_test",
+    )
 
 
 if __name__ == "__main__":

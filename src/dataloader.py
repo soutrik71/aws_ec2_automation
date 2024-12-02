@@ -1,9 +1,11 @@
 from loguru import logger
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from torchvision import datasets, transforms
 import lightning as pl
 from typing import Optional
+from multiprocessing import cpu_count
+from sklearn.model_selection import train_test_split
 
 # Configure Loguru to save logs to the logs/ directory
 logger.add("logs/dataloader.log", rotation="1 MB", level="INFO")
@@ -11,7 +13,11 @@ logger.add("logs/dataloader.log", rotation="1 MB", level="INFO")
 
 class MNISTDataModule(pl.LightningDataModule):
     def __init__(
-        self, batch_size: int = 64, data_dir: str = "./data", num_workers: int = 4
+        self,
+        batch_size: int = 64,
+        data_dir: str = "./data",
+        num_workers: int = int(cpu_count()),
+        train_subset_fraction: float = 0.25,  # Fraction of training data to use
     ):
         """
         Initializes the MNIST Data Module with configurations for dataloaders.
@@ -20,11 +26,13 @@ class MNISTDataModule(pl.LightningDataModule):
             batch_size (int): Batch size for training, validation, and testing.
             data_dir (str): Directory to download and store the dataset.
             num_workers (int): Number of workers for data loading.
+            train_subset_fraction (float): Fraction of training data to use (0.0 < fraction <= 1.0).
         """
         super().__init__()
         self.batch_size = batch_size
         self.data_dir = data_dir
         self.num_workers = num_workers
+        self.train_subset_fraction = train_subset_fraction
         self.transform = transforms.Compose(
             [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
         )
@@ -47,13 +55,20 @@ class MNISTDataModule(pl.LightningDataModule):
         """
         logger.info(f"Setting up data for stage: {stage}")
         if stage == "fit" or stage is None:
-            self.mnist_train = datasets.MNIST(
+            full_train_dataset = datasets.MNIST(
                 root=self.data_dir, train=True, transform=self.transform
             )
+            train_indices, _ = train_test_split(
+                range(len(full_train_dataset)),
+                train_size=self.train_subset_fraction,
+                random_state=42,
+            )
+            self.mnist_train = Subset(full_train_dataset, train_indices)
+
             self.mnist_val = datasets.MNIST(
                 root=self.data_dir, train=False, transform=self.transform
             )
-            logger.info(f"Loaded training data: {len(self.mnist_train)} samples.")
+            logger.info(f"Loaded training subset: {len(self.mnist_train)} samples.")
             logger.info(f"Loaded validation data: {len(self.mnist_val)} samples.")
         if stage == "test" or stage is None:
             self.mnist_test = datasets.MNIST(
