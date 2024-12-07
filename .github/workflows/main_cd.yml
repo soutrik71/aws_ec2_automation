@@ -66,10 +66,19 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Create .env file
+        run: |
+          echo "HYDRA_FULL_ERROR=1" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+          echo "::add-mask::${{ secrets.AWS_ACCESS_KEY_ID }}"
+          echo "::add-mask::${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+
       - name: Run Docker Compose for all services
         run: |
-          docker-compose build --no-cache
-          docker-compose up -d
+          docker-compose --env-file .env build --no-cache
+          docker-compose --env-file .env up -d
           docker-compose logs --follow train eval
           docker-compose down --remove-orphans
 
