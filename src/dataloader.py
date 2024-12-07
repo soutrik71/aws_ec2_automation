@@ -34,7 +34,11 @@ class MNISTDataModule(pl.LightningDataModule):
         self.num_workers = num_workers
         self.train_subset_fraction = train_subset_fraction
         self.transform = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
+            [
+                transforms.Resize((28, 28)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5,), (0.5,)),
+            ]
         )
         logger.info(f"MNIST DataModule initialized with batch size {self.batch_size}")
 

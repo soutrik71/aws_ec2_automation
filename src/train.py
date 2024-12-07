@@ -12,6 +12,7 @@ from src.model import LitEfficientNet
 from loguru import logger
 import os
 from src.utils.aws_s3_services import S3Handler
+from src.torchscript import make_jit_model
 
 # Ensure the logs directory exists
 os.makedirs("logs", exist_ok=True)
@@ -92,6 +93,10 @@ def main():
     # write a checkpoints/train_done.flag
     with open("checkpoints/train_done.flag", "w") as f:
         f.write("Training done.")
+
+    # Trace the model
+    logger.info("Tracing the model...")
+    make_jit_model(ckpt_path="./checkpoints")
 
     # upload checkpoints to S3
     s3_handler = S3Handler(bucket_name="deep-bucket-s3")
