@@ -3,7 +3,7 @@ name: Sync to Hugging Face Hub for Gradio App MNIST Classifier  # this is not wo
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   sync-to-hub:
@@ -32,19 +32,6 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           USER: soutrik
           SPACE: gradio_demo_MNIST_Classifier
-
-      # # Track individual files with LFS
-      # - name: Track last.ckpt with Git LFS
-      #   run: |
-      #     git lfs track "checkpoints/last.ckpt"
-      #     git add .gitattributes
-      #     git commit -m "Track last.ckpt with Git LFS" || echo "Skip commit if no changes"
-
-      # - name: Track best_model.ckpt with Git LFS
-      #   run: |
-      #     git lfs track "checkpoints/best_model.ckpt"
-      #     git add .gitattributes
-      #     git commit -m "Track best_model.ckpt with Git LFS" || echo "Skip commit if no changes"
 
       # Ensure LFS objects are checked out
       - name: Ensure LFS objects are present
