@@ -1,9 +1,10 @@
-name: Deploy PyTorch Training with all advanced features like self-hosted EC2 runner, Docker Buildx, Amazon ECR, Hugging Face Spaces
+name: Deploy PyTorch Training with Hugging Face Sync
 
 on:
   push:
     branches:
       - master
+      - main
   workflow_dispatch:
 
 jobs:
@@ -36,6 +37,9 @@ jobs:
     name: Deploy PyTorch Training Pipeline
     needs: start-runner
     runs-on: ${{ needs.start-runner.outputs.label }}
+    outputs:
+      ecr-registry: ${{ steps.login-ecr.outputs.registry }}
+      image-tag: ${{ github.sha }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -61,14 +65,6 @@ jobs:
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Create .env file
-        run: |
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
-          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
-          echo "::add-mask::${{ secrets.AWS_ACCESS_KEY_ID }}"
-          echo "::add-mask::${{ secrets.AWS_SECRET_ACCESS_KEY }}"
 
       - name: Run Docker Compose for all services
         run: |
@@ -99,14 +95,71 @@ jobs:
 
       - name: Clean up environment
         run: |
-          rm -f .env
           docker system prune -af --volumes
+
+  sync-to-hub:
+    name: Sync to Hugging Face Hub
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Install Git LFS
+        run: |
+          curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+          sudo apt-get install git-lfs
+          git lfs install
+
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "soutrik"
+          git config --global user.email "soutrik.chowdhury@ab-inbev.com"
+
+      - name: Add remote
+        run: |
+          git remote add space https://$USER:$HF_TOKEN@huggingface.co/spaces/$USER/$SPACE
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          USER: soutrik
+          SPACE: gradio_demo_MNIST_Classifier
+
+      - name: Ensure LFS objects are present
+        run: git lfs checkout
+
+      - name: Add README.md
+        run: |
+          cat <<EOF > README.md
+          ---
+          title: My Gradio App MNIST Classifier
+          emoji: 🚀
+          colorFrom: blue
+          colorTo: green
+          sdk: gradio
+          sdk_version: "5.7.1"
+          app_file: app.py
+          pinned: false
+          ---
+          EOF
+          git add README.md
+          git commit -m "Add README.md" || echo "Skip commit if no changes"
+
+      - name: Push to hub
+        run: |
+          git push --force https://$USER:$HF_TOKEN@huggingface.co/spaces/$USER/$SPACE main
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          USER: soutrik
+          SPACE: gradio_demo_MNIST_Classifier
 
   stop-runner:
     name: Stop self-hosted EC2 runner
     needs:
       - start-runner
       - deploy
+      - sync-to-hub
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
