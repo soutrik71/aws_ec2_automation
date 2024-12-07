@@ -1,0 +1,4 @@
+*.ckpt filter=lfs diff=lfs merge=lfs -text
+checkpoints/best_model.ckpt filter=lfs diff=lfs merge=lfs -text
+checkpoints/last.ckpt filter=lfs diff=lfs merge=lfs -text
+checkpoints/*.ckpt filter=lfs diff=lfs merge=lfs -text
