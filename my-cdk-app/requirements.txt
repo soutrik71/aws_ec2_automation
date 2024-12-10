@@ -1,3 +1,5 @@
+aws-cdk-lib==2.172.0
+constructs>=10.0.0,<11.0.0
 torch==2.4.1
 torchvision==0.19.1
 hydra-colorlog==1.2.0
@@ -26,4 +28,3 @@ accelerate>=1.1.1
 cryptography>=44.0.0
 boto3
 pyopenssl>=24.3.0
-constructs

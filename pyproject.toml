@@ -77,6 +77,8 @@ pyopenssl = "^23.0.0"
 cryptography = "^41.0.0"
 accelerate = "^1.1.1"
 gradio="5.7.1"
+aws-cdk-lib = "^2.172.0"
+constructs = "*"
 
 [tool.poetry.dev-dependencies]
 pytest-asyncio = "^0.20.3"

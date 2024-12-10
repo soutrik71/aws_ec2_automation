@@ -1,0 +1,36 @@
+{
+  "version": "38.0.1",
+  "files": {
+    "38cb85b26af79b463a16ee0a5e580c825ce341fd398dcd92cace5e4e72421eba": {
+      "source": {
+        "path": "MnistStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "007758426687-ap-south-1": {
+          "bucketName": "cdk-hnb659fds-assets-007758426687-ap-south-1",
+          "objectKey": "38cb85b26af79b463a16ee0a5e580c825ce341fd398dcd92cace5e4e72421eba.json",
+          "region": "ap-south-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::007758426687:role/cdk-hnb659fds-file-publishing-role-007758426687-ap-south-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {
+    "c5632f526a3dfe53ab8c3e25cc0705dd318f1640703d812c3397648f89240ad3": {
+      "source": {
+        "directory": "asset.c5632f526a3dfe53ab8c3e25cc0705dd318f1640703d812c3397648f89240ad3",
+        "dockerFile": "Dockerfile",
+        "platform": "linux/amd64"
+      },
+      "destinations": {
+        "007758426687-ap-south-1": {
+          "repositoryName": "cdk-hnb659fds-container-assets-007758426687-ap-south-1",
+          "imageTag": "c5632f526a3dfe53ab8c3e25cc0705dd318f1640703d812c3397648f89240ad3",
+          "region": "ap-south-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::007758426687:role/cdk-hnb659fds-image-publishing-role-007758426687-ap-south-1"
+        }
+      }
+    }
+  }
+}

@@ -4,6 +4,9 @@ FROM python:3.10.15-slim as builder
 LABEL maintainer="Soutrik soutrik1991@gmail.com" \
       description="Docker image for running a Python app with dependencies managed by Poetry."
 
+# Install AWS Lambda Web Adapter
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 /lambda-adapter /opt/extensions/lambda-adapter
+
 # Install Poetry and necessary system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends curl && \
     curl -sSL https://install.python-poetry.org | python3 - && \
@@ -37,12 +40,18 @@ FROM python:3.10.15-slim as runner
 RUN apt-get update && apt-get install -y --no-install-recommends curl && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Copy.env file to set environment variables
+COPY .env /app/.env
+
 # Copy application source code and necessary files
 COPY src /app/src
-COPY main.py /app/main.py
+COPY app.py /app/app.py
 
 # Copy virtual environment from the builder stage
 COPY --from=builder /app/.venv /app/.venv
+
+# copy checkpoints from local to docker
+COPY checkpoints /app/checkpoints
 
 # Set the working directory to /app
 WORKDIR /app
@@ -50,5 +59,7 @@ WORKDIR /app
 # Set the environment path to use the virtual environment
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Default command
-CMD ["python", "-m", "main"]
+# Expose port 8080 for documentation purposes
+EXPOSE 8080
+
+CMD ["python", "-m", "app"]

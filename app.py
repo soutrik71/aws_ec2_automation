@@ -5,6 +5,7 @@ from PIL import Image
 from pathlib import Path
 from loguru import logger
 from src.utils.aws_s3_services import S3Handler
+from gradio.flagging import SimpleCSVLogger
 
 # Configure Loguru for logging
 logger.add("logs/inference.log", rotation="1 MB", level="INFO")
@@ -70,13 +71,18 @@ class MNISTClassifier:
 # Path to the TorchScript model
 model_path = "./checkpoints/traced_model.pt"
 
-# Download model checkpoint from S3 (if needed)
-s3_handler = S3Handler(bucket_name="deep-bucket-s3")
-s3_handler.download_folder(
-    "checkpoints_test",
-    "checkpoints",
-)
 
+# if the file does not exist, download it from S3
+if not Path(model_path).exists():
+    logger.info("Downloading model from S3...")
+    s3_handler = S3Handler(bucket_name="deep-bucket-s3")
+    s3_handler.download_folder(
+        "checkpoints_test",
+        "checkpoints",
+    )
+
+# Initialize the classifier
+logger.info("Initializing the classifier...")
 classifier = MNISTClassifier(model_path=model_path)
 
 # Define Gradio interface
@@ -86,7 +92,10 @@ demo = gr.Interface(
     outputs=gr.Label(num_top_classes=1),
     title="MNIST Classifier",
     description="Upload a handwritten digit image to classify it (0-9).",
+    flagging_mode="never",
+    flagging_callback=SimpleCSVLogger(),
 )
 
 if __name__ == "__main__":
-    demo.launch(share=True)
+    logger.info("Starting the Gradio server...")
+    demo.launch(server_name="0.0.0.0", server_port=8080)
