@@ -7,7 +7,7 @@ from torch.optim.lr_scheduler import StepLR
 import torch.optim as optim
 from loguru import logger
 
-logger.add("logs/model.log", rotation="1 MB", level="INFO")
+logger.add("logs/model.log", rotation="1 MB", level="INFO", enqueue=False)
 
 
 class LitEfficientNet(pl.LightningModule):

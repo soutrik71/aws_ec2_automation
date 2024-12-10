@@ -18,7 +18,7 @@ from src.torchscript import make_jit_model
 os.makedirs("logs", exist_ok=True)
 
 # Configure Loguru for logging
-logger.add("logs/training.log", rotation="1 MB", level="INFO")
+logger.add("logs/training.log", rotation="1 MB", level="INFO", enqueue=False)
 
 
 def main():

@@ -36,7 +36,7 @@ class MnistClassifierFastAPIStack(Stack):
                 file="Dockerfile",
             ),
             architecture=Architecture.X86_64,
-            memory_size=8192,  # 8GB
+            memory_size=10000,  # 10 GB
             timeout=Duration.minutes(15),
         )
 

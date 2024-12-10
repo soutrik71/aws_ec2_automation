@@ -8,7 +8,7 @@ from multiprocessing import cpu_count
 from sklearn.model_selection import train_test_split
 
 # Configure Loguru to save logs to the logs/ directory
-logger.add("logs/dataloader.log", rotation="1 MB", level="INFO")
+logger.add("logs/dataloader.log", rotation="1 MB", level="INFO", enqueue=False)
 
 
 class MNISTDataModule(pl.LightningDataModule):

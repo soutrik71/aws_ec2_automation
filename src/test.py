@@ -7,7 +7,7 @@ from pathlib import Path
 from src.utils.aws_s3_services import S3Handler
 
 # Configure Loguru to save logs to the logs/ directory
-logger.add("logs/test.log", rotation="1 MB", level="INFO")
+logger.add("logs/test.log", rotation="1 MB", level="INFO", enqueue=False)
 
 
 def infer(checkpoint_path, image):

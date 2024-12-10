@@ -59,7 +59,7 @@ WORKDIR /app
 # Set the environment path to use the virtual environment
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Expose port 8080 for documentation purposes
-EXPOSE 8080
+# Expose port 8000 for documentation purposes
+EXPOSE 8000
 
 CMD ["python", "-m", "app"]

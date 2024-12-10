@@ -8,7 +8,7 @@ from src.utils.aws_s3_services import S3Handler
 from gradio.flagging import SimpleCSVLogger
 
 # Configure Loguru for logging
-logger.add("logs/inference.log", rotation="1 MB", level="INFO")
+logger.add("logs/inference.log", rotation="1 MB", level="INFO", enqueue=False)
 
 
 class MNISTClassifier:
@@ -98,4 +98,4 @@ demo = gr.Interface(
 
 if __name__ == "__main__":
     logger.info("Starting the Gradio server...")
-    demo.launch(server_name="0.0.0.0", server_port=8080)
+    demo.launch(server_name="0.0.0.0", server_port=8000)

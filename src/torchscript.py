@@ -4,7 +4,7 @@ import rootutils
 from src.model import LitEfficientNet
 from loguru import logger as log
 
-log.add("logs/torchscript.log", rotation="1 MB", level="INFO")
+log.add("logs/torchscript.log", rotation="1 MB", level="INFO", enqueue=False)
 
 # Setup root directory
 root = rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
