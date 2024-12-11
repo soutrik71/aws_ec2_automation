@@ -6,8 +6,13 @@ from torchmetrics.classification import Accuracy
 from pathlib import Path
 from src.utils.aws_s3_services import S3Handler
 
+import os
+
+log_dir = "/tmp/logs"
+os.makedirs(log_dir, exist_ok=True)
+
 # Configure Loguru to save logs to the logs/ directory
-logger.add("logs/test.log", rotation="1 MB", level="INFO", enqueue=False)
+logger.add(f"{log_dir}/test.log", rotation="1 MB", level="INFO", enqueue=False)
 
 
 def infer(checkpoint_path, image):

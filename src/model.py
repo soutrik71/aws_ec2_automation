@@ -6,8 +6,13 @@ from torchmetrics.classification import Accuracy
 from torch.optim.lr_scheduler import StepLR
 import torch.optim as optim
 from loguru import logger
+import os
 
-logger.add("logs/model.log", rotation="1 MB", level="INFO", enqueue=False)
+log_dir = "/tmp/logs"
+os.makedirs(log_dir, exist_ok=True)
+
+# Configure Loguru to save logs to the logs/ directory
+logger.add(f"{log_dir}/model.log", rotation="1 MB", level="INFO", enqueue=False)
 
 
 class LitEfficientNet(pl.LightningModule):

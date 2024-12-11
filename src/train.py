@@ -14,11 +14,13 @@ import os
 from src.utils.aws_s3_services import S3Handler
 from src.torchscript import make_jit_model
 
-# Ensure the logs directory exists
-os.makedirs("logs", exist_ok=True)
+import os
 
-# Configure Loguru for logging
-logger.add("logs/training.log", rotation="1 MB", level="INFO", enqueue=False)
+log_dir = "/tmp/logs"
+os.makedirs(log_dir, exist_ok=True)
+
+# Configure Loguru to save logs to the logs/ directory
+logger.add(f"{log_dir}/train.log", rotation="1 MB", level="INFO", enqueue=False)
 
 
 def main():

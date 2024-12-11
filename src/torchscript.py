@@ -2,9 +2,17 @@ from pathlib import Path
 import torch
 import rootutils
 from src.model import LitEfficientNet
-from loguru import logger as log
+from loguru import logger
 
-log.add("logs/torchscript.log", rotation="1 MB", level="INFO", enqueue=False)
+import os
+
+logger_dir = "/tmp/logs"
+os.makedirs(logger_dir, exist_ok=True)
+
+# Configure loggeruru to save loggers to the loggers/ directory
+logger.add(
+    f"{logger_dir}/torchscript.log", rotation="1 MB", level="INFO", enqueue=False
+)
 
 # Setup root directory
 root = rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
@@ -17,13 +25,13 @@ def make_jit_model(ckpt_path, input_shape=(1, 1, 28, 28)):
     # Check for checkpoint file
     checkpoint_file = Path(ckpt_path) / "best_model.ckpt"
     if not checkpoint_file.exists():
-        log.error(f"Checkpoint file not found at {checkpoint_file}")
+        logger.error(f"Checkpoint file not found at {checkpoint_file}")
         return
 
     # Load the checkpoint
     checkpoint = torch.load(checkpoint_file)
     model.load_state_dict(checkpoint["state_dict"])
-    log.info(f"Checkpoint loaded from {checkpoint_file}")
+    logger.info(f"Checkpoint loaded from {checkpoint_file}")
 
     # Set model to evaluation mode
     model.eval()
@@ -32,17 +40,17 @@ def make_jit_model(ckpt_path, input_shape=(1, 1, 28, 28)):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     example_input = torch.randn(*input_shape).to(device)
-    log.info(f"Using device: {device}")
+    logger.info(f"Using device: {device}")
 
     # Trace the model
-    log.info("Tracing model...")
+    logger.info("Tracing model...")
     try:
         traced_model = model.to_torchscript(
             method="trace", example_inputs=example_input
         )
-        log.info("Model traced successfully!")
+        logger.info("Model traced successfully!")
     except Exception as e:
-        log.error(f"Error during model tracing: {e}")
+        logger.error(f"Error during model tracing: {e}")
         return
 
     # Save the traced model
@@ -50,7 +58,7 @@ def make_jit_model(ckpt_path, input_shape=(1, 1, 28, 28)):
     output_dir.mkdir(exist_ok=True, parents=True)
     output_path = output_dir / "traced_model.pt"
     torch.jit.save(traced_model, output_path)
-    log.info(f"Traced model saved to: {output_path}")
+    logger.info(f"Traced model saved to: {output_path}")
 
 
 if __name__ == "__main__":

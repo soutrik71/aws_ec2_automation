@@ -126,3 +126,4 @@ checkpoints/
 checkpoints/*
 checkpoints/best_model.ckpt
 checkpoints/last.ckpt
+cdk.out/

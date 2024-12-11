@@ -7,8 +7,13 @@ from loguru import logger
 from src.utils.aws_s3_services import S3Handler
 from gradio.flagging import SimpleCSVLogger
 
-# Configure Loguru for logging
-logger.add("logs/inference.log", rotation="1 MB", level="INFO", enqueue=False)
+import os
+
+log_dir = "/tmp/logs"
+os.makedirs(log_dir, exist_ok=True)
+
+# Configure Loguru to save logs to the logs/ directory
+logger.add("f{log_dir}/inference.log", rotation="1 MB", level="INFO", enqueue=False)
 
 
 class MNISTClassifier:
