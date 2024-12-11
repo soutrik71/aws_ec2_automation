@@ -13,7 +13,7 @@ log_dir = "/tmp/logs"
 os.makedirs(log_dir, exist_ok=True)
 
 # Configure Loguru to save logs to the logs/ directory
-logger.add("f{log_dir}/inference.log", rotation="1 MB", level="INFO", enqueue=False)
+logger.add(f"{log_dir}/inference.log", rotation="1 MB", level="INFO", enqueue=False)
 
 
 class MNISTClassifier:
