@@ -284,3 +284,57 @@ Step 4: Stop and Delete EC2 Runner
   Configures AWS credentials.
   Stops the EC2 instance using the label and instance ID from start-runner.
   Validates the termination state of the EC2 instance to ensure proper cleanup.
+
+
+
+#### FastAPI and Aws Serverless deployment strategy from aws machine
+```bash
+# check the venv with poetry
+poetry lock
+poetry install --no-root
+
+# run in local
+python app.py
+
+# create a docker image and run
+docker build -t fastapi-aws-mnist:latest .
+docker run --name fastapi-aws-mnist-container -p 8000:8000 --env-file .env fastapi-aws-mnist:latest
+docker stop fastapi-aws-mnist-container
+docker rm fastapi-aws-mnist-container
+
+# serverless deployment pre install aws cdk and aws cli
+npm install -g aws-cdk
+
+# convert the fastapi code with UI using fasthtml and Shad4FastHtml
+# create a main.py file where we modify the fastapi code to include the UI and check the docker file too
+uvicorn main:app --host 0.0.0.0 --port 8000
+
+```
+
+#### If deployed from non aws machine
+
+```bash
+# first install aws cli and configure the aws cli
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+aws --version
+aws configure
+# in env local and GHA have the env variables like AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, CDK_DEFAULT_ACCOUNT, CDK_DEFAULT_REGION
+
+#AWS CDK Integration
+  # npm install -g aws-cdk
+  # In cdk.py file CatDogClassifierFastAPIStack class is used to fetch a Dockerfile and create a container like service with aws lambda service.
+  # While developing in local make sure that you have set all the environment variables
+  # aws configure -> AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION
+  # CDK_DEFAULT_ACCOUNT, CDK_DEFAULT_REGION
+  # cdk bootstrap command is used to set up the necessary AWS resources that AWS CDK needs to deploy your infrastructure. It prepares your AWS environment for the first time deployment or when you need to deploy infrastructure that requires certain resources like storing docker image, I am roles, CloudFormation.
+  # test the docker image locally
+  # cdk deploy - Deploys your infrastructure to AWS as defined by your CDK stack.
+  # cdk destroy - Destroy all resources created about without any traces left.**
+
+
+
+
+
+

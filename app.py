@@ -1,23 +1,45 @@
-import gradio as gr
+import io
+from pathlib import Path
+from typing import Annotated
+
+import numpy as np
 import torch
 import torchvision.transforms as transforms
-from PIL import Image
-from pathlib import Path
+from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from loguru import logger
+from PIL import Image
+
 from src.utils.aws_s3_services import S3Handler
-from gradio.flagging import SimpleCSVLogger
 
-import os
+app = FastAPI()
 
+# Add CORS Middleware
+origins = ["http://localhost", "http://localhost:8080"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Logging
 log_dir = "/tmp/logs"
-os.makedirs(log_dir, exist_ok=True)
-
-# Configure Loguru to save logs to the logs/ directory
+Path(log_dir).mkdir(parents=True, exist_ok=True)
 logger.add(f"{log_dir}/inference.log", rotation="1 MB", level="INFO", enqueue=False)
+
+# Model Path
+MODEL_PATH = "./checkpoints/traced_model.pt"
 
 
 class MNISTClassifier:
-    def __init__(self, model_path="./checkpoints/traced_model.pt"):
+    def __init__(self, model_path: str):
+        """
+        Initializes the MNIST classifier for inference.
+        """
+
         self.model_path = model_path
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info(f"Inference will run on device: {self.device}")
@@ -48,7 +70,7 @@ class MNISTClassifier:
         return torch.jit.load(self.model_path).to(self.device)
 
     @torch.no_grad()
-    def predict(self, image):
+    def predict(self, image: Image.Image):
         """
         Perform inference on a single image.
 
@@ -73,34 +95,76 @@ class MNISTClassifier:
         return {self.labels[idx]: float(prob) for idx, prob in enumerate(probabilities)}
 
 
-# Path to the TorchScript model
-model_path = "./checkpoints/traced_model.pt"
-
-
-# if the file does not exist, download it from S3
-if not Path(model_path).exists():
-    logger.info("Downloading model from S3...")
-    s3_handler = S3Handler(bucket_name="deep-bucket-s3")
-    s3_handler.download_folder(
-        "checkpoints_test",
-        "checkpoints",
-    )
-
 # Initialize the classifier
-logger.info("Initializing the classifier...")
-classifier = MNISTClassifier(model_path=model_path)
+classifier = None
 
-# Define Gradio interface
-demo = gr.Interface(
-    fn=classifier.predict,
-    inputs=gr.Image(height=160, width=160, image_mode="L", type="pil"),
-    outputs=gr.Label(num_top_classes=1),
-    title="MNIST Classifier",
-    description="Upload a handwritten digit image to classify it (0-9).",
-    flagging_mode="never",
-    flagging_callback=SimpleCSVLogger(),
-)
+
+@app.on_event("startup")
+async def startup_event():
+    """
+    Downloads the model from S3 and initializes the classifier during app startup.
+    """
+    global classifier
+
+    # Check if the model exists locally; if not, download it from S3
+    if not Path(MODEL_PATH).exists():
+        logger.info("Downloading model from S3...")
+        s3_handler = S3Handler(bucket_name="deep-bucket-s3")
+        s3_handler.download_folder("checkpoints_test", "checkpoints")
+
+    # Initialize the classifier
+    logger.info("Initializing the MNIST Classifier...")
+    classifier = MNISTClassifier(model_path=MODEL_PATH)
+
+
+@app.post("/predict")
+async def predict(file: Annotated[UploadFile, File(...)]):
+    """
+    API endpoint to perform prediction on uploaded image.
+
+    Args:
+        file: The uploaded image file.
+
+    Returns:
+        JSON response containing the predicted class probabilities.
+    """
+    try:
+        # Read the uploaded image
+        file_b = await file.read()
+        img = Image.open(io.BytesIO(file_b))
+        img = img.convert("L")  # MNIST expects grayscale images
+
+        # Perform prediction
+        prediction = classifier.predict(img)
+
+        return JSONResponse(content={"predictions": prediction})
+    except Exception as e:
+        logger.error(f"Error during prediction: {str(e)}")
+        return JSONResponse(
+            content={"error": "Failed to process the image"}, status_code=500
+        )
+
+
+@app.get("/health")
+async def health_check():
+    """
+    API endpoint to check the health of the service.
+    """
+    return {"status": "ok"}
+
 
 if __name__ == "__main__":
-    logger.info("Starting the Gradio server...")
-    demo.launch(server_name="0.0.0.0", server_port=8000)
+    import uvicorn
+
+    logger.info("Starting the FastAPI server...")
+    uvicorn.run(
+        "app:app",
+        host="0.0.0.0",  # Exposes the application to external traffic
+        port=8000,  # Sets the server port
+        reload=False,  # Auto-reloads the server during development
+        workers=2,  # Number of worker processes for handling requests
+        timeout_keep_alive=150,  # Time (in seconds) to keep the connection alive
+        access_log=True,  # Enables access logs
+        log_level="info",  # Logging level: debug, info, warning, error, critical
+        lifespan="on",  # Ensures startup and shutdown events are properly triggered
+    )
