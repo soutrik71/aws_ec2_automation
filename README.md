@@ -320,6 +320,8 @@ unzip awscliv2.zip
 sudo ./aws/install
 aws --version
 aws configure
+aws configure list
+aws s3 ls
 # in env local and GHA have the env variables like AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, CDK_DEFAULT_ACCOUNT, CDK_DEFAULT_REGION
 
 #AWS CDK Integration
