@@ -335,7 +335,8 @@ aws s3 ls
   # test the docker image locally
   # cdk deploy -v --logs - Deploys your infrastructure to AWS as defined by your CDK stack.
   # cdk destroy -vf - Destroy all resources created about without any traces left.**
-
+  # Connectivity with another S3 bucker doesnot work as the bucket is not public and the bucket policy is not set to public.
+  # all loggers should be readonly so that while deploying the stack the logs doesnot get deleted.
 
 
 
