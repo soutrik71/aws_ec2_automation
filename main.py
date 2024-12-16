@@ -38,6 +38,10 @@ from shad4fast import (
 from PIL import Image
 from loguru import logger
 from src.utils.aws_s3_services import S3Handler
+from dotenv import load_dotenv, find_dotenv
+
+# Load environment variables
+load_dotenv(find_dotenv())
 
 # Initialize FastAPI app
 app = FastAPI(

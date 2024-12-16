@@ -300,7 +300,8 @@ python app.py
 docker build -t fastapi-aws-mnist:latest .
 docker run --name fastapi-aws-mnist-container -p 8000:8000 --env-file .env fastapi-aws-mnist:latest
 docker stop fastapi-aws-mnist-container
-docker rm fastapi-aws-mnist-container
+docker rm -f fastapi-aws-mnist-container
+docker run -it --rm -p 8000:8000 --env-file .env fastapi-aws-mnist:latest bash # to run bash in the container to check the env variables
 
 # serverless deployment pre install aws cdk and aws cli
 npm install -g aws-cdk
@@ -330,10 +331,10 @@ aws s3 ls
   # While developing in local make sure that you have set all the environment variables
   # aws configure -> AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION
   # CDK_DEFAULT_ACCOUNT, CDK_DEFAULT_REGION
-  # cdk bootstrap command is used to set up the necessary AWS resources that AWS CDK needs to deploy your infrastructure. It prepares your AWS environment for the first time deployment or when you need to deploy infrastructure that requires certain resources like storing docker image, I am roles, CloudFormation.
+  # cdk bootstrap -v command is used to set up the necessary AWS resources that AWS CDK needs to deploy your infrastructure. It prepares your AWS environment for the first time deployment or when you need to deploy infrastructure that requires certain resources like storing docker image, I am roles, CloudFormation.
   # test the docker image locally
-  # cdk deploy - Deploys your infrastructure to AWS as defined by your CDK stack.
-  # cdk destroy - Destroy all resources created about without any traces left.**
+  # cdk deploy -v --logs - Deploys your infrastructure to AWS as defined by your CDK stack.
+  # cdk destroy -vf - Destroy all resources created about without any traces left.**
 
 
 

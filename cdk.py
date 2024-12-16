@@ -14,10 +14,10 @@ from aws_cdk.aws_lambda import (
     Architecture,
     FunctionUrlAuthType,
 )
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+load_dotenv(find_dotenv())
 my_environment = Environment(
     account=os.environ["CDK_DEFAULT_ACCOUNT"], region=os.environ["CDK_DEFAULT_REGION"]
 )
