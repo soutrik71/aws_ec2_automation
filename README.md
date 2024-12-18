@@ -324,17 +324,19 @@ aws configure
 aws configure list
 aws s3 ls
 # in env local and GHA have the env variables like AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, CDK_DEFAULT_ACCOUNT, CDK_DEFAULT_REGION
+```
 
-#AWS CDK Integration
+#### AWS CDK Integration
+```bash
   # npm install -g aws-cdk
   # In cdk.py file CatDogClassifierFastAPIStack class is used to fetch a Dockerfile and create a container like service with aws lambda service.
   # While developing in local make sure that you have set all the environment variables
   # aws configure -> AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION
   # CDK_DEFAULT_ACCOUNT, CDK_DEFAULT_REGION
-  # cdk bootstrap -v command is used to set up the necessary AWS resources that AWS CDK needs to deploy your infrastructure. It prepares your AWS environment for the first time deployment or when you need to deploy infrastructure that requires certain resources like storing docker image, I am roles, CloudFormation.
   # test the docker image locally
-  # cdk deploy -v --logs - Deploys your infrastructure to AWS as defined by your CDK stack.
-  # cdk destroy -vf - Destroy all resources created about without any traces left.**
+  cdk bootstrap -v # command is used to set up the necessary AWS resources that AWS CDK needs to deploy your infrastructure. It prepares your AWS environment for the first time deployment or when you need to deploy infrastructure that requires certain resources like storing docker image, I am roles, CloudFormation.
+  cdk deploy -v --logs # Deploys your infrastructure to AWS as defined by your CDK stack.
+  cdk destroy -vf #Destroy all resources created about without any traces left.**
   # Connectivity with another S3 bucker doesnot work as the bucket is not public and the bucket policy is not set to public.
   # all loggers should be readonly so that while deploying the stack the logs doesnot get deleted.
 
